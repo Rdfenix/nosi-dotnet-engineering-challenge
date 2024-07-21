@@ -14,30 +14,43 @@ namespace NOS.Engineering.Challenge.API.Controllers;
 public class ContentController : ControllerBase
 {
     private readonly IContentsManager _manager;
-    public ContentController(IContentsManager manager)
+    private readonly ILogger _logger;
+    public ContentController(IContentsManager manager, ILogger<ContentController> logger)
     {
         _manager = manager;
+        _logger = logger;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetManyContents()
     {
+        _logger.LogInformation("Getting all contents");
         var contents = await _manager.GetManyContents().ConfigureAwait(false);
 
         if (!contents.Any())
+        {
+            _logger.LogError("Contents Not Found");
             return NotFound();
+        }
 
+        _logger.LogInformation("List of content was presented");
         return Ok(contents);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetContent(Guid id)
     {
+        _logger.LogInformation("Searching for content");
         var content = await _manager.GetContent(id).ConfigureAwait(false);
 
         if (content == null)
+        {
+            _logger.LogError("Contents Not Found");
             return NotFound();
+        }
 
+
+        _logger.LogInformation("Content found");
         return Ok(content);
     }
 
@@ -46,6 +59,7 @@ public class ContentController : ControllerBase
         [FromBody] ContentInput content
         )
     {
+        _logger.LogInformation("Searching for content");
         var createdContent = await _manager.CreateContent(content.ToDto()).ConfigureAwait(false);
 
         return createdContent == null ? Problem() : Ok(createdContent);
