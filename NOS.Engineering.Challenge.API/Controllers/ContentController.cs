@@ -89,9 +89,20 @@ public class ContentController : ControllerBase
         [FromBody] ContentInput content
         )
     {
-        var updatedContent = await _manager.UpdateContent(id, content.ToDto()).ConfigureAwait(false);
+        ContentMongo data = new(
+        content.Title,
+            content.SubTitle,
+            content.Description,
+            content.ImageUrl,
+            content.Duration,
+            content.StartTime,
+            content.EndTime,
+            content.GenreList
+        );
+        // var updatedContent = await _manager.UpdateContent(id, content.ToDto()).ConfigureAwait(false);
+        await _mongoDBService.UpdateOneAsync(id, data);
 
-        return updatedContent == null ? NotFound() : Ok(updatedContent);
+        return content == null ? NotFound() : Ok(content);
     }
 
     [HttpDelete("{id}")]

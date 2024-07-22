@@ -31,6 +31,12 @@ public class MongoDBContext
         string ID = id.ToString();
         return (ContentMongo)await _contents.FindAsync(c => c.Id == ID);
     }
+
+    public async Task UpdateOneAsync(Guid id, ContentMongo data)
+    {
+        string ID = id.ToString();
+        await _contents.ReplaceOneAsync(ID, data);
+    }
     /* public async Task AddToPlaylistAsync(string id, string movieId) {}
     public async Task DeleteAsync(string id) { }*/
 
