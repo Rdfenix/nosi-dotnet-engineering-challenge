@@ -12,6 +12,8 @@ public class ContentInput
     public DateTime? StartTime { get; set; }
     public DateTime? EndTime { get; set; }
 
+     public List<string> GenreList { get; set; } = null!;
+
     public ContentDto ToDto()
     {
         return new ContentDto(

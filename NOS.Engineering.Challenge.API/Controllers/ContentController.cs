@@ -15,19 +15,24 @@ public class ContentController : ControllerBase
 {
     private readonly IContentsManager _manager;
     private readonly ILogger _logger;
-    public ContentController(IContentsManager manager, ILogger<ContentController> logger)
+
+    private readonly MongoDBContext _mongoDBService;
+
+    public ContentController(IContentsManager manager, ILogger<ContentController> logger, MongoDBContext mongoDBContext)
     {
         _manager = manager;
         _logger = logger;
+        _mongoDBService = mongoDBContext;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetManyContents()
     {
         _logger.LogInformation("Getting all contents");
-        var contents = await _manager.GetManyContents().ConfigureAwait(false);
+        //var contents = await _manager.GetManyContents().ConfigureAwait(false);
+        var contents = await _mongoDBService.GetAsync();
 
-        if (!contents.Any())
+        if (contents == null)
         {
             _logger.LogError("Contents Not Found");
             return NotFound();
@@ -41,7 +46,8 @@ public class ContentController : ControllerBase
     public async Task<IActionResult> GetContent(Guid id)
     {
         _logger.LogInformation("Searching for content");
-        var content = await _manager.GetContent(id).ConfigureAwait(false);
+        //var content = await _manager.GetContent(id).ConfigureAwait(false);
+        var content = await _mongoDBService.GetOneAsync(id);
 
         if (content == null)
         {
@@ -59,10 +65,22 @@ public class ContentController : ControllerBase
         [FromBody] ContentInput content
         )
     {
-        _logger.LogInformation("Searching for content");
-        var createdContent = await _manager.CreateContent(content.ToDto()).ConfigureAwait(false);
 
-        return createdContent == null ? Problem() : Ok(createdContent);
+        _logger.LogInformation("Searching for content");
+        /*var createdContent = await _manager.CreateContent(content.ToDto()).ConfigureAwait(false);*/
+        ContentMongo data = new(
+            content.Title,
+                content.SubTitle,
+                content.Description,
+                content.ImageUrl,
+                content.Duration,
+                content.StartTime,
+                content.EndTime,
+                content.GenreList
+            );
+        await _mongoDBService.CreateAsync(data);
+
+        return content == null ? Problem() : Ok(content);
     }
 
     [HttpPatch("{id}")]
