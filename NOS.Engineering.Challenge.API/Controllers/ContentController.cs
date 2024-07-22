@@ -110,7 +110,9 @@ public class ContentController : ControllerBase
         Guid id
     )
     {
+        _logger.LogInformation("Deleting content");
         var deletedId = await _manager.DeleteContent(id).ConfigureAwait(false);
+        _logger.LogInformation("Process complete");
         return Ok(deletedId);
     }
 
@@ -120,12 +122,12 @@ public class ContentController : ControllerBase
         [FromBody] IEnumerable<string> genre
     )
     {
-
+        _logger.LogInformation("Searching for content");
         var content = await _manager.GetContent(id).ConfigureAwait(false);
 
         if (content == null || genre == null)
         {
-            Console.WriteLine("passei aqui");
+            _logger.LogError("Contents Not Found");
             return NotFound();
         }
 
@@ -135,8 +137,11 @@ public class ContentController : ControllerBase
 
         if (filteredItems.Count == 0)
         {
+            _logger.LogError("Contents Not Found");
             return NotFound();
         }
+
+        _logger.LogInformation("Adding genre");
 
         foreach (var item in filteredItems)
         {
@@ -156,6 +161,7 @@ public class ContentController : ControllerBase
 
         var updatedContent = await _manager.UpdateContent(id, newData).ConfigureAwait(false);
 
+        _logger.LogInformation("Process complete");
         return updatedContent == null ? NotFound() : Ok(updatedContent);
     }
 
@@ -170,10 +176,11 @@ public class ContentController : ControllerBase
 
         if (content == null || genre == null)
         {
+            _logger.LogError("Contents Not Found");
             return NotFound();
         }
 
-
+        _logger.LogInformation("Removing genre");
         List<string> genres = content.GenreList.ToList();
         List<string> genreList = genre.ToList();
         List<string> filteredItems = genres.Where(x => genreList.All(y => !y.Equals(x))).ToList();
@@ -190,7 +197,7 @@ public class ContentController : ControllerBase
         );
 
         var updatedContent = await _manager.UpdateContent(id, data).ConfigureAwait(false);
-
+        _logger.LogInformation("Process complete");
         return updatedContent == null ? NotFound() : Ok(updatedContent);
     }
 }
